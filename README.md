@@ -1,4 +1,4 @@
-# 商业评估
+# 团队毕业夏日项目 商业评估AI
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.4-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-blue)](https://reactjs.org/)
