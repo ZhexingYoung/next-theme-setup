@@ -1,13 +1,14 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useReducer, type ReactNode } from "react"
+import { createContext, useContext, useReducer, useEffect, type ReactNode } from "react"
 
 interface AssessmentState {
   currentStep: number
   answers: Record<string, any>
   isCompleted: boolean
   reportData: any
+  completedSteps: Set<number>
 }
 
 type AssessmentAction =
@@ -15,25 +16,35 @@ type AssessmentAction =
   | { type: "NEXT_STEP" }
   | { type: "PREV_STEP" }
   | { type: "SET_STEP"; payload: number }
+  | { type: "COMPLETE_STEP"; payload: number }
   | { type: "COMPLETE_ASSESSMENT" }
   | { type: "GENERATE_REPORT"; payload: any }
+  | { type: "LOAD_PROGRESS"; payload: Partial<AssessmentState> }
 
 const initialState: AssessmentState = {
   currentStep: 0,
   answers: {},
   isCompleted: false,
   reportData: null,
+  completedSteps: new Set(),
 }
 
 const assessmentReducer = (state: AssessmentState, action: AssessmentAction): AssessmentState => {
   switch (action.type) {
     case "SET_ANSWER":
+      const newAnswers = {
+        ...state.answers,
+        [action.payload.questionId]: action.payload.answer,
+      }
+
+      // 保存到localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("assessment_answers", JSON.stringify(newAnswers))
+      }
+
       return {
         ...state,
-        answers: {
-          ...state.answers,
-          [action.payload.questionId]: action.payload.answer,
-        },
+        answers: newAnswers,
       }
     case "NEXT_STEP":
       return {
@@ -50,6 +61,13 @@ const assessmentReducer = (state: AssessmentState, action: AssessmentAction): As
         ...state,
         currentStep: action.payload,
       }
+    case "COMPLETE_STEP":
+      const newCompletedSteps = new Set(state.completedSteps)
+      newCompletedSteps.add(action.payload)
+      return {
+        ...state,
+        completedSteps: newCompletedSteps,
+      }
     case "COMPLETE_ASSESSMENT":
       return {
         ...state,
@@ -59,6 +77,12 @@ const assessmentReducer = (state: AssessmentState, action: AssessmentAction): As
       return {
         ...state,
         reportData: action.payload,
+      }
+    case "LOAD_PROGRESS":
+      return {
+        ...state,
+        ...action.payload,
+        completedSteps: new Set(action.payload.completedSteps || []),
       }
     default:
       return state
@@ -72,6 +96,27 @@ const AssessmentContext = createContext<{
 
 export function AssessmentProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(assessmentReducer, initialState)
+
+  // 加载保存的进度
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedProgress = localStorage.getItem("assessment_progress")
+      const savedAnswers = localStorage.getItem("assessment_answers")
+
+      if (savedProgress || savedAnswers) {
+        const progress = savedProgress ? JSON.parse(savedProgress) : {}
+        const answers = savedAnswers ? JSON.parse(savedAnswers) : {}
+
+        dispatch({
+          type: "LOAD_PROGRESS",
+          payload: {
+            ...progress,
+            answers: { ...progress.answers, ...answers },
+          },
+        })
+      }
+    }
+  }, [])
 
   return <AssessmentContext.Provider value={{ state, dispatch }}>{children}</AssessmentContext.Provider>
 }

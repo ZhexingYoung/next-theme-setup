@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts"
 import { Download, Target, Users, TrendingUp, DollarSign, User } from "lucide-react"
+import { AccountDropdown } from "./account-dropdown"
+import { useEffect, useState } from "react"
 
 const radarData = [
   { subject: "Go To Market", A: 50, fullMark: 100 },
@@ -25,31 +27,30 @@ const keyMetrics = [
 ]
 
 export function BusinessDashboard() {
+  const [userName, setUserName] = useState<string>("")
+  useEffect(() => {
+    const userStr = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        setUserName(user.first_name || "")
+      } catch {}
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-slate-700">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
-            <div>
-              <div className="font-bold text-lg">ASCENT</div>
-              <div className="text-xs text-orange-500 font-semibold">BRIGHT EVOLVE</div>
-            </div>
+            <img src="/images/ascent-logo.png" alt="logo" className="h-10 w-auto" />
           </div>
           <div className="flex space-x-6 ml-8">
             <button className="text-white hover:text-slate-300">Dashboard</button>
-            <button className="text-slate-400 hover:text-white">My assessments</button>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-slate-300">My Account</span>
-          <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">U</span>
-          </div>
-        </div>
+        <AccountDropdown />
       </div>
 
       <div className="p-6">
@@ -58,7 +59,7 @@ export function BusinessDashboard() {
           <div className="lg:col-span-2 space-y-6">
             {/* Welcome Section */}
             <div>
-              <h1 className="text-2xl font-bold mb-2">Good evening, 哲豪</h1>
+              <h1 className="text-2xl font-bold mb-2">Good evening{userName ? `, ${userName}` : ""}</h1>
               <p className="text-slate-300 mb-4">
                 Here's the current standing of your business report based on your most recent assessment.
               </p>
@@ -87,11 +88,6 @@ export function BusinessDashboard() {
                   </CardContent>
                 </Card>
               </div>
-
-              <Button className="bg-purple-600 hover:bg-purple-700 mb-6">
-                <Download className="w-4 h-4 mr-2" />
-                Download Report
-              </Button>
             </div>
 
             {/* Key Metrics */}
@@ -121,10 +117,6 @@ export function BusinessDashboard() {
             <Card className="bg-white text-slate-900">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Your Report</CardTitle>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PDF
-                </Button>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="go-to-market" className="w-full">

@@ -19,14 +19,8 @@ export function AssessmentSidebar({ steps, currentStep, onStepClick }: Assessmen
   return (
     <div className="w-80 bg-slate-800 p-6">
       {/* Logo */}
-      <div className="flex items-center space-x-2 mb-12">
-        <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">A</span>
-        </div>
-        <div>
-          <div className="font-bold text-lg text-white">ASCENT</div>
-          <div className="text-xs text-orange-500 font-semibold">BRIGHT EVOLVE</div>
-        </div>
+      <div className="flex items-center justify-center mb-12">
+        <img src="/images/ascent-logo.png" alt="logo" className="h-16 w-auto" />
       </div>
 
       {/* Steps */}
@@ -49,12 +43,12 @@ export function AssessmentSidebar({ steps, currentStep, onStepClick }: Assessmen
                 "w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium",
                 index === currentStep
                   ? "bg-white text-slate-900"
-                  : index < currentStep
+                  : step.completed
                     ? "bg-green-600 text-white"
                     : "bg-slate-600 text-slate-400",
               )}
             >
-              {index < currentStep ? <Check className="w-4 h-4" /> : index + 1}
+              {step.completed ? <Check className="w-4 h-4" /> : index + 1}
             </div>
             <span className="text-sm">{step.title}</span>
           </button>
