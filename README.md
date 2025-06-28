@@ -1,11 +1,11 @@
-# Ascent - 商业评估平台
+# 商业评估
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.4-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-blue)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38B2AC)](https://tailwindcss.com/)
 
-Ascent 是一个现代化的商业评估平台，旨在帮助企业进行全面的商业分析和成长评估。通过结构化的问卷和智能分析，为企业提供数据驱动的商业洞察和成长建议。
+通过结构化的问卷和智能分析，为企业提供数据驱动的商业洞察和成长建议。
 
 ## ✨ 主要功能
 
@@ -204,23 +204,3 @@ npm run lint
 3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 打开 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 📞 支持
-
-如果您遇到任何问题或有建议，请：
-
-- 创建 [Issue](../../issues)
-- 发送邮件至 support@ascent.com
-- 查看 [文档](https://docs.ascent.com)
-
-## 🙏 致谢
-
-感谢所有为这个项目做出贡献的开发者和用户！
-
----
-
-**Ascent** - 让商业成长更简单 🚀 
