@@ -11,6 +11,7 @@ import { ScalingEssentialsQuestions } from "./scaling-essentials-questions"
 import { StreamliningClimbQuestions } from "./streamlining-climb-questions"
 import { AssemblingTeamQuestions } from "./assembling-team-questions"
 import { ToolboxSuccessQuestions } from "./toolbox-success-questions"
+import { calculateAllPillarScores, calculateCategoryScores, saveScoresToFile } from "@/lib/score-calculator"
 
 const assessmentSteps = [
   { id: "service-offering", title: "Service Offering", completed: false },
@@ -171,14 +172,63 @@ export function AssessmentFlow() {
     alert("Progress saved successfully!")
   }
 
-  const handleCompleteSection = () => {
+  const handleCompleteSection = async () => {
     if (isCurrentStepCompleted()) {
       // 标记当前步骤为完成
       dispatch({ type: "COMPLETE_STEP", payload: state.currentStep })
 
-      // 如果是最后一步，跳转到dashboard
+      // 如果是最后一步，计算分数并跳转到dashboard
       if (state.currentStep === assessmentSteps.length - 1) {
         dispatch({ type: "COMPLETE_ASSESSMENT" })
+        // 计算所有六大类的分数
+        const pillarScores = calculateAllPillarScores(state.answers)
+        // 计算三大能力分数
+        const categoryScores = calculateCategoryScores(state.answers)
+        // 统一 userId：用当前登录用户邮箱
+        let userId = "user_default"
+        if (typeof window !== "undefined") {
+          const userStr = localStorage.getItem("currentUser")
+          if (userStr) {
+            try {
+              const user = JSON.parse(userStr)
+              if (user.email) userId = user.email
+            } catch {}
+          }
+        }
+        // 保存分数到文件
+        try {
+          await saveScoresToFile(userId, pillarScores, categoryScores)
+          console.log("Pillar & Category scores saved:", pillarScores, categoryScores)
+        } catch (error) {
+          console.error("Failed to save scores:", error)
+        }
+        // 自动POST到FastAPI
+        try {
+          // 获取 Service Offering 所有题目
+          const serviceOfferingIds = [
+            "industry", "business-challenge", "service-type", "opportunity-type", "concerns", "growth-route", "business-age", "business-size-employees", "business-size-revenue", "paying-clients", "biggest-client-revenue", "revenue-type", "funding-status", "revenue-targets", "growth-ambitions", "clients-needed", "preferred-revenue", "funding-plans"
+          ]
+          const serviceOffering: Record<string, any> = {}
+          serviceOfferingIds.forEach(id => {
+            if (state.answers[id]) serviceOffering[id] = state.answers[id]
+          })
+          // 获取六大类建议文本
+          const { getAllPillarReports } = await import("@/lib/score-calculator")
+          const pillarReports = getAllPillarReports(pillarScores, userId)
+          // 组装数据
+          const data = {
+            userId,
+            serviceOffering,
+            pillarReports
+          }
+          await fetch("http://127.0.0.1:8000/api/save-user-report", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          })
+        } catch (e) {
+          console.error("自动POST到FastAPI失败", e)
+        }
         router.push("/dashboard")
       } else {
         // 否则进入下一步

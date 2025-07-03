@@ -23,6 +23,12 @@ const serviceOfferingQuestions: Question[] = [
     required: true,
   },
   {
+    id: "business-challenge",
+    title: "What is the most challenging part in your business?",
+    type: "text",
+    required: true,
+  },
+  {
     id: "service-type",
     title: "How would you describe what you offer?",
     type: "multiple-choice",
@@ -260,7 +266,7 @@ export function ServiceOfferingQuestions({ answers, onAnswer }: ServiceOfferingQ
                     <Textarea
                       value={currentAnswer.text || ""}
                       onChange={e => onAnswer(question.id, { text: e.target.value })}
-                      placeholder="Please enter your industry"
+                      placeholder={question.id === "industry" ? "Please enter your industry" : "Please enter your challenge"}
                       className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400 min-h-[60px]"
                     />
                   )}
