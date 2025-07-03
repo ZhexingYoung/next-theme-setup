@@ -11,7 +11,7 @@ import { ScalingEssentialsQuestions } from "./scaling-essentials-questions"
 import { StreamliningClimbQuestions } from "./streamlining-climb-questions"
 import { AssemblingTeamQuestions } from "./assembling-team-questions"
 import { ToolboxSuccessQuestions } from "./toolbox-success-questions"
-import { calculateAllPillarScores, calculateCategoryScores, saveScoresToFile } from "@/lib/score-calculator"
+import { calculateAllPillarScores, calculateCategoryScores, saveScoresToFile, getAllPillarReports } from "@/lib/score-calculator"
 
 const assessmentSteps = [
   { id: "service-offering", title: "Service Offering", completed: false },
@@ -202,25 +202,36 @@ export function AssessmentFlow() {
         } catch (error) {
           console.error("Failed to save scores:", error)
         }
+        // 只导出 Service Offering 部分
+        const serviceOfferingIds = [
+          "industry", "business-challenge", "service-type", "opportunity-type", "concerns", "growth-route", "business-age", "business-size-employees", "business-size-revenue", "paying-clients", "biggest-client-revenue", "revenue-type", "funding-status", "revenue-targets", "growth-ambitions", "clients-needed", "preferred-revenue", "funding-plans"
+        ];
+        const serviceOffering: Record<string, any> = {};
+        serviceOfferingIds.forEach(id => {
+          if (state.answers[id]) serviceOffering[id] = state.answers[id];
+        });
+        // 获取六大类建议文本
+        const pillarReports = getAllPillarReports(pillarScores, userId);
+        // 组装数据
+        const data = {
+          userId,
+          serviceOffering,
+          pillarReports
+        }
+        // 新增：自动生成并下载 JSON 文件
+        function downloadJsonFile(data: any, filename: string) {
+          const jsonStr = JSON.stringify(data, null, 2)
+          const blob = new Blob([jsonStr], { type: "application/json" })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = filename
+          a.click()
+          URL.revokeObjectURL(url)
+        }
+        downloadJsonFile(data, `${userId.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}.json`)
         // 自动POST到FastAPI
         try {
-          // 获取 Service Offering 所有题目
-          const serviceOfferingIds = [
-            "industry", "business-challenge", "service-type", "opportunity-type", "concerns", "growth-route", "business-age", "business-size-employees", "business-size-revenue", "paying-clients", "biggest-client-revenue", "revenue-type", "funding-status", "revenue-targets", "growth-ambitions", "clients-needed", "preferred-revenue", "funding-plans"
-          ]
-          const serviceOffering: Record<string, any> = {}
-          serviceOfferingIds.forEach(id => {
-            if (state.answers[id]) serviceOffering[id] = state.answers[id]
-          })
-          // 获取六大类建议文本
-          const { getAllPillarReports } = await import("@/lib/score-calculator")
-          const pillarReports = getAllPillarReports(pillarScores, userId)
-          // 组装数据
-          const data = {
-            userId,
-            serviceOffering,
-            pillarReports
-          }
           await fetch("http://127.0.0.1:8000/api/save-user-report", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

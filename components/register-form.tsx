@@ -95,6 +95,11 @@ export function RegisterForm() {
         throw new Error(data.error || "Registration failed")
       }
 
+      // 注册成功，写入localStorage
+      if (data.user) {
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+      }
+
       // 注册成功，显示成功消息并跳转到主页
       alert("Registration successful! Please log in with your credentials.")
       router.push("/")

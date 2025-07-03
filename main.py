@@ -2,8 +2,18 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import json
 import os
+from typing import List, Dict, Any
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有来源
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class UserReport(BaseModel):
     userId: str

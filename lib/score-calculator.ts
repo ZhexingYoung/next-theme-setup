@@ -148,14 +148,14 @@ export function calculateCategoryScores(answers: Record<string, any>): Record<st
 
 import pillarAdvice from "./pillar-advice.json"
 
-// 工具函数：字符串hash，保证同一userId每次都一样
+// 更强的字符串hash算法，确保分散性
 function hashString(str: string): number {
-  let hash = 0
+  let hash = 5381;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i)
-    hash |= 0 // 转为32位整数
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash = hash & hash; // 保证32位
   }
-  return Math.abs(hash)
+  return Math.abs(hash);
 }
 
 // 六大类与pillar-advice.json的key映射

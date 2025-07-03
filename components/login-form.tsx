@@ -49,6 +49,11 @@ export function LoginForm() {
         throw new Error(data.error || "Login failed")
       }
 
+      // 登录成功，写入localStorage
+      if (data.user) {
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+      }
+
       // 登录成功，跳转到评估页面
       router.push("/assessment")
     } catch (error) {

@@ -176,33 +176,24 @@ export function ServiceOfferingQuestions({ answers, onAnswer }: ServiceOfferingQ
     setExpandedQuestions(newExpanded)
   }
 
-  const handleOptionToggle = (questionId: string, option: string) => {
-    const currentAnswer = answers[questionId] || { options: [], additionalText: "" }
-    const currentOptions = Array.isArray(currentAnswer.options) ? currentAnswer.options : []
-
-    const newOptions = currentOptions.includes(option)
-      ? currentOptions.filter((o: string) => o !== option)
-      : [...currentOptions, option]
-
+  const handleOptionSelect = (questionId: string, option: string) => {
+    const currentAnswer = answers[questionId] || { selectedOption: "", additionalText: "" }
     onAnswer(questionId, {
       ...currentAnswer,
-      options: newOptions,
+      selectedOption: option,
     })
-
     // 自动跳转到下一题
-    if (newOptions.length > 0) {
-      const currentIndex = serviceOfferingQuestions.findIndex((q) => q.id === questionId)
-      if (currentIndex < serviceOfferingQuestions.length - 1) {
-        const nextQuestionId = serviceOfferingQuestions[currentIndex + 1].id
-        setTimeout(() => {
-          setExpandedQuestions(new Set([nextQuestionId]))
-        }, 300)
-      }
+    const currentIndex = serviceOfferingQuestions.findIndex((q) => q.id === questionId)
+    if (currentIndex < serviceOfferingQuestions.length - 1) {
+      const nextQuestionId = serviceOfferingQuestions[currentIndex + 1].id
+      setTimeout(() => {
+        setExpandedQuestions(new Set([nextQuestionId]))
+      }, 300)
     }
   }
 
   const handleTextChange = (questionId: string, text: string) => {
-    const currentAnswer = answers[questionId] || { options: [], additionalText: "" }
+    const currentAnswer = answers[questionId] || { selectedOption: "", additionalText: "" }
     onAnswer(questionId, {
       ...currentAnswer,
       additionalText: text,
@@ -216,11 +207,11 @@ export function ServiceOfferingQuestions({ answers, onAnswer }: ServiceOfferingQ
       // 文本题：只要有内容就算完成
       return answer.text && answer.text.trim() !== ""
     }
-    // 多选题：原有逻辑
+    // 单选题：只要选了一个选项或填写了附加信息就算完成
     if (question.type === "multiple-choice") {
-      const hasOptions = Array.isArray(answer.options) && answer.options.length > 0
+      const hasOption = typeof answer.selectedOption === "string" && answer.selectedOption.trim() !== ""
       const hasText = typeof answer.additionalText === "string" && answer.additionalText.trim() !== ""
-      return hasOptions || hasText
+      return hasOption || hasText
     }
     return false
   }
@@ -238,7 +229,7 @@ export function ServiceOfferingQuestions({ answers, onAnswer }: ServiceOfferingQ
       {serviceOfferingQuestions.map((question, index) => {
         const isExpanded = expandedQuestions.has(question.id)
         const isCompleted = isQuestionCompleted(question)
-        const currentAnswer = answers[question.id] || { options: [], additionalText: "", text: "" }
+        const currentAnswer = answers[question.id] || { selectedOption: "", additionalText: "" }
 
         return (
           <Card key={question.id} className="bg-slate-800 border-slate-700">
@@ -276,10 +267,10 @@ export function ServiceOfferingQuestions({ answers, onAnswer }: ServiceOfferingQ
                         {question.options?.map((option) => (
                           <Button
                             key={option}
-                            variant={currentAnswer.options?.includes(option) ? "default" : "outline"}
-                            onClick={() => handleOptionToggle(question.id, option)}
+                            variant={currentAnswer.selectedOption === option ? "default" : "outline"}
+                            onClick={() => handleOptionSelect(question.id, option)}
                             className={
-                              currentAnswer.options?.includes(option)
+                              currentAnswer.selectedOption === option
                                 ? "bg-slate-600 text-white border-slate-500"
                                 : "bg-transparent text-slate-300 border-slate-600 hover:bg-slate-700"
                             }
@@ -309,7 +300,7 @@ export function ServiceOfferingQuestions({ answers, onAnswer }: ServiceOfferingQ
                   {question.type === "text" && currentAnswer.text}
                   {question.type === "multiple-choice" && (
                     <>
-                      Selected: {currentAnswer.options?.join(", ")}
+                      Selected: {currentAnswer.selectedOption}
                       {currentAnswer.additionalText && (
                         <div className="mt-1 text-xs">
                           Additional info: {currentAnswer.additionalText.substring(0, 100)}

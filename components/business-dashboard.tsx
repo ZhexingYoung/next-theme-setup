@@ -10,6 +10,7 @@ import { AccountDropdown } from "./account-dropdown"
 import { useEffect, useState } from "react"
 import { getUserScoreHistory } from "@/lib/score-calculator"
 import pillarAdvice from "@/lib/pillar-advice.json"
+import { useRouter } from "next/navigation"
 
 const radarData = [
   { subject: "Go To Market", A: 50, fullMark: 100 },
@@ -116,6 +117,7 @@ async function postUserReportJson(userId: string, serviceOffering: Record<string
 }
 
 export function BusinessDashboard() {
+  const router = useRouter();
   const [userName, setUserName] = useState<string>("")
   const [pillarScores, setPillarScores] = useState<Record<string, number>>({})
   const [radarData, setRadarData] = useState<any[]>([])
@@ -128,12 +130,17 @@ export function BusinessDashboard() {
   const [serviceOffering, setServiceOffering] = useState<Record<string, any>>({})
   
   useEffect(() => {
+    // 未登录自动跳转
+    const userStr = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null;
+    if (!userStr) {
+      router.push("/login");
+      return;
+    }
     let localUserId = "user_default"
-    const userStr = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null
     if (userStr) {
       try {
         const user = JSON.parse(userStr)
-        setUserName(user.first_name || "")
+        setUserName(user.firstName || user.email || "")
         if (user.email) localUserId = user.email
       } catch {}
     }
@@ -183,7 +190,7 @@ export function BusinessDashboard() {
         setServiceOffering(answers)
       }
     }
-  }, [])
+  }, [router])
 
   // 自动 POST JSON 到后端
   useEffect(() => {
@@ -314,7 +321,9 @@ export function BusinessDashboard() {
                     const percent = toPercent(score)
                     const color = getCircleColor(score)
                     const label = getCircleLabel(score)
-                    const desc = getAdviceByScore(tab.label as keyof typeof keyMap, userId, score)
+                    // 兼容 key 大小写和空格差异
+                    const reportKey = Object.keys(pillarReports).find(k => k.trim().toLowerCase() === tab.label.trim().toLowerCase()) || tab.label
+                    const desc = pillarReports[reportKey] || "No advice available."
                     return (
                       <TabsContent key={tab.key} value={tab.key} className="mt-6">
                         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
