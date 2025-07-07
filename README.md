@@ -72,8 +72,8 @@
 
 ### 数据管理
 - **[Prisma](https://www.prisma.io/)** - 现代数据库 ORM
-- **[SQLite](https://www.sqlite.org/)** - 轻量级数据库
 - **localStorage** - 客户端数据缓存
+- **JSON 数据存储** - 用户评估数据本地存储
 
 ### 后端集成
 - **[FastAPI](https://fastapi.tiangolo.com/)** - 高性能Python Web框架
@@ -86,19 +86,10 @@
 next-theme-setup/
 ├── app/                    # Next.js App Router 页面
 │   ├── api/               # API 路由
-│   │   └── auth/          # 认证相关 API
-│   │       ├── login/     # 登录接口
-│   │       ├── logout/    # 登出接口
-│   │       ├── register/  # 注册接口
-│   │       └── verify/    # 验证接口
+│   │   └── llm-advice/    # AI建议接口
 │   ├── assessment/        # 评估页面
 │   ├── dashboard/         # 仪表板页面
-│   ├── admin/             # 管理员页面
-│   ├── my-assessments/    # 我的评估页面
-│   ├── my-company/        # 我的公司页面
-│   ├── my-profile/        # 我的档案页面
-│   ├── users/             # 用户管理页面
-│   └── user-data/         # 用户数据页面
+│   └── admin/             # 管理员页面
 ├── components/            # React 组件
 │   ├── ui/               # 基础 UI 组件库
 │   ├── assessment-flow.tsx      # 评估流程组件
@@ -108,27 +99,38 @@ next-theme-setup/
 │   ├── register-form.tsx       # 注册表单
 │   ├── question-card.tsx       # 问题卡片
 │   ├── theme-switcher.tsx      # 主题切换器
-│   └── [各种问卷组件]          # 各评估类别的问卷组件
+│   ├── theme-toggle.tsx        # 主题切换按钮
+│   ├── theme-provider.tsx      # 主题提供者
+│   ├── toaster.tsx             # Toast 通知组件
+│   ├── terms-modal.tsx         # 条款模态框
+│   ├── country-selector.tsx    # 国家选择器
+│   ├── service-offering-questions.tsx    # 服务提供问卷
+│   ├── base-camp-questions.tsx          # 成功基础问卷
+│   ├── tracking-climb-questions.tsx     # 追踪进展问卷
+│   ├── scaling-essentials-questions.tsx # 扩展要点问卷
+│   ├── streamlining-climb-questions.tsx # 精简攀登问卷
+│   ├── assembling-team-questions.tsx    # 团队组建问卷
+│   └── toolbox-success-questions.tsx    # 成功工具箱问卷
 ├── contexts/             # React Context
 │   └── assessment-context.tsx  # 评估上下文
 ├── lib/                  # 工具库
 │   ├── auth.ts          # 认证服务
-│   ├── db.ts            # 数据库操作
 │   ├── utils.ts         # 工具函数
 │   ├── score-calculator.ts     # 分数计算器
 │   └── pillar-advice.json     # 支柱建议数据
 ├── hooks/               # 自定义 Hooks
-│   ├── use-mobile.tsx   # 移动设备检测
 │   └── use-toast.ts     # Toast 通知
 ├── data/                # 数据文件
 │   └── scores/          # 分数数据
-├── prisma/              # 数据库配置
-│   ├── schema.prisma    # 数据库模式
-│   └── migrations/      # 数据库迁移
 ├── public/              # 静态资源
 │   └── images/          # 图片资源
-├── scripts/             # 脚本文件
-└── user-exports/        # 用户数据导出
+├── styles/              # 样式文件
+├── user-exports/        # 用户数据导出
+├── main.py              # Python 后端服务
+├── test-json-format.html    # JSON格式测试页面
+├── test-backend.html        # 后端测试页面
+├── test-api.html            # API测试页面
+└── BACKEND_INTEGRATION.md   # 后端集成文档
 ```
 
 ## 🚀 快速开始
@@ -154,26 +156,14 @@ next-theme-setup/
    pnpm install
    ```
 
-3. **设置数据库**
-   ```bash
-   # 安装 Prisma CLI
-   npm install -g prisma
-   
-   # 生成 Prisma 客户端
-   npx prisma generate
-   
-   # 运行数据库迁移
-   npx prisma migrate dev
-   ```
-
-4. **启动前端开发服务器**
+3. **启动前端开发服务器**
    ```bash
    npm run dev
    # 或使用 pnpm
    pnpm dev
    ```
 
-5. **启动后端AI服务** (可选)
+4. **启动后端AI服务** (可选)
    ```bash
    # 安装 Python 依赖
    pip install fastapi uvicorn
@@ -182,7 +172,7 @@ next-theme-setup/
    python main.py
    ```
 
-6. **打开浏览器**
+5. **打开浏览器**
    访问 [http://localhost:3000](http://localhost:3000)
 
 ### 构建生产版本
@@ -290,7 +280,13 @@ npm run type-check
 npm run lint
 
 # 测试JSON生成
-# 访问 http://localhost:3000/test-json.html
+# 访问 http://localhost:3000/test-json-format.html
+
+# 测试后端API
+# 访问 http://localhost:3000/test-backend.html
+
+# 测试API连接
+# 访问 http://localhost:3000/test-api.html
 ```
 
 ## 📦 部署
@@ -322,8 +318,7 @@ docker run -p 8000:8000 business-assessment-api
 
 ### 后端API规范
 - **基础URL**: `http://localhost:8000`
-- **评估数据接口**: `POST /api/assessments`
-- **AI建议接口**: `POST /api/advice`
+- **AI建议接口**: `POST /api/llm-advice`
 - **数据格式**: JSON
 
 ### 集成文档
