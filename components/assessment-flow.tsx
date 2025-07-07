@@ -215,7 +215,7 @@ export function AssessmentFlow() {
 
         result.serviceOffering[q.id] = {
           question: q.question,
-          question_id: `R${rCounter}`,
+          question_name: `R${rCounter}`,
           anwser: selectedOption,
           anwserselete: answerLetter,
           additionalText: answer.additionalText || ""
@@ -228,7 +228,7 @@ export function AssessmentFlow() {
     const sectionMappings = [
       {
         name: "Base camp for success (go to market GTM)",
-        questionPrefix: "question_00",
+        questionPrefix: "GTM",
         category: "go to market",
         questions: [
           { id: "target-niche", question: "We know exactly which niche sector(s), and in which geographies, to target" },
@@ -245,7 +245,7 @@ export function AssessmentFlow() {
       },
       {
         name: "Tracking the climb (Performance Metrics PM)",
-        questionPrefix: "question_01",
+        questionPrefix: "PM",
         category: "performance metrics",
         questions: [
           { id: "commercial-performance", question: "We have a good grasp of our current commercial performance including revenue, gross profit, average deal value" },
@@ -258,7 +258,7 @@ export function AssessmentFlow() {
       },
       {
         name: "Scaling essentials (Commercial Essentials CE)",
-        questionPrefix: "question_02",
+        questionPrefix: "CE",
         category: "commercial essentials",
         questions: [
           { id: "objections-techniques", question: "We know all of the objections prospects or clients may come up with, and have clear techniques to overcome them" },
@@ -269,7 +269,7 @@ export function AssessmentFlow() {
       },
       {
         name: "Streamlining the climb (Optimal Processes OP)",
-        questionPrefix: "question_03",
+        questionPrefix: "OP",
         category: "optimal processes",
         questions: [
           { id: "outbound-sales-approach", question: "We have a proven approach to bringing new leads into this business via an outbound sales approach" },
@@ -280,7 +280,7 @@ export function AssessmentFlow() {
       },
       {
         name: "Assembling the team (People, Structure & Culture PSC)",
-        questionPrefix: "question_04",
+        questionPrefix: "PSC",
         category: "people structure culture",
         questions: [
           { id: "team-structure", question: "We have the right team structure in place to support our growth ambitions" },
@@ -292,7 +292,7 @@ export function AssessmentFlow() {
       },
       {
         name: "Toolbox for success (Systems & Tools ST)",
-        questionPrefix: "question_05",
+        questionPrefix: "ST",
         category: "systems tools",
         questions: [
           { id: "central-shared-drive", question: "Anyone involved in sales has access to a central shared drive, where they can easily access any information they might need" },
@@ -306,6 +306,7 @@ export function AssessmentFlow() {
 
     // 处理每个部分的问题
     sectionMappings.forEach((section, sectionIndex) => {
+      let questionCounter = 1 // 每个部分从1开始计数
       section.questions.forEach((q, questionIndex) => {
         const answer = answers[q.id]
         if (!answer || !answer.selectedOption) return
@@ -321,12 +322,13 @@ export function AssessmentFlow() {
         const score = scoreMapping[answer.selectedOption] || 0
 
         result[section.name][q.id] = {
-          question_id: section.questionPrefix, // 统一使用section的questionPrefix，不细分
+          question_name: `${section.questionPrefix}${questionCounter}`, // 使用前缀+递增编号
           category: section.category,
           question: q.question,
           anwser: answer.selectedOption,
           score: score
         }
+        questionCounter++ // 递增问题编号
       })
     })
 

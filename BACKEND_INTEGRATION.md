@@ -23,37 +23,44 @@ Content-Type: application/json
     "business-challenge": { "text": "Scaling operations" },
     "service-type": {
       "question": "How would you describe what you offer?",
-      "question_id": "R1",
+      "question_name": "R1",
       "anwser": "Service",
       "anwserselete": "a",
       "additionalText": ""
     }
-    // ... 更多Service Offering题目 (R1-R18)
+    // ... 更多Service Offering题目 (R1-R16)
   },
   "Base camp for success (go to market GTM)": {
     "target-niche": {
-      "question_id": "question_00",
+      "question_name": "GTM1",
       "category": "go to market",
-      "question": "We know exactly which niche sector(s)...",
+      "question": "We know exactly which niche sector(s), and in which geographies, to target",
       "anwser": "Strongly Agree",
       "score": 2
     }
-    // ... 更多题目
+    // ... 更多题目 (GTM2-GTM10)
   },
   "Tracking the climb (Performance Metrics PM)": {
-    // 类似结构
+    "commercial-performance": {
+      "question_name": "PM1",
+      "category": "performance metrics",
+      "question": "We have a good grasp of our current commercial performance including revenue, gross profit, average deal value",
+      "anwser": "Strongly Disagree",
+      "score": -2
+    }
+    // ... 更多题目 (PM2-PM6)
   },
   "Scaling essentials (Commercial Essentials CE)": {
-    // 类似结构
+    // 类似结构 (CE1-CE4)
   },
   "Streamlining the climb (Optimal Processes OP)": {
-    // 类似结构
+    // 类似结构 (OP1-OP4)
   },
   "Assembling the team (People, Structure & Culture PSC)": {
-    // 类似结构
+    // 类似结构 (PSC1-PSC5)
   },
   "Toolbox for success (Systems & Tools ST)": {
-    // 类似结构
+    // 类似结构 (ST1-ST5)
   }
 }
 ```
@@ -94,13 +101,13 @@ POST /api/llm-advice
 ## 数据结构详解
 
 ### Service Offering 部分
-- **题目编号**：R1, R2, R3... R18
+- **题目编号**：R1, R2, R3... R16
 - **选项字母**：a, b, c... (对应选项顺序)
 - **文本题**：industry, business-challenge
-- **选择题**：其他16题
+- **选择题**：其他14题
 
 ### 其他问卷部分
-- **题目编号**：统一使用 question_00, question_01 等前缀
+- **题目编号**：使用各自的前缀+递增编号
 - **分数映射**：
   - Strongly Disagree: -2
   - Disagree: -1
@@ -108,13 +115,13 @@ POST /api/llm-advice
   - Agree: 1
   - Strongly Agree: 2
 
-### 分类信息
-- **Go To Market (GTM)**: question_00
-- **Performance Metrics (PM)**: question_01
-- **Commercial Essentials (CE)**: question_02
-- **Optimal Processes (OP)**: question_03
-- **People Structure Culture (PSC)**: question_04
-- **Systems Tools (ST)**: question_05
+### 分类信息和题目编号
+- **Go To Market (GTM)**: GTM1, GTM2, GTM3... GTM10
+- **Performance Metrics (PM)**: PM1, PM2, PM3... PM6
+- **Commercial Essentials (CE)**: CE1, CE2, CE3, CE4
+- **Optimal Processes (OP)**: OP1, OP2, OP3, OP4
+- **People Structure Culture (PSC)**: PSC1, PSC2, PSC3, PSC4, PSC5
+- **Systems Tools (ST)**: ST1, ST2, ST3, ST4, ST5
 
 ## 前端调用逻辑
 
@@ -155,6 +162,15 @@ POST /api/llm-advice
 - 位置：`components/assessment-flow.tsx` 第165行
 - 函数：`generateNewJsonFormat()`
 - 处理：标准化所有问卷数据
+- **重要更新**：
+  - 字段名从 `question_id` 改为 `question_name`
+  - Service Offering: R1-R16
+  - GTM: GTM1-GTM10
+  - PM: PM1-PM6
+  - CE: CE1-CE4
+  - OP: OP1-OP4
+  - PSC: PSC1-PSC5
+  - ST: ST1-ST5
 
 ### API调用逻辑
 - 位置：`components/assessment-flow.tsx` 第383行
@@ -216,6 +232,99 @@ async def generate_llm_advice(data: Dict[str, Any]):
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
+## 完整JSON示例
+
+```json
+{
+  "serviceOffering": {
+    "industry": { "text": "Technology" },
+    "business-challenge": { "text": "Scaling operations" },
+    "service-type": {
+      "question": "How would you describe what you offer?",
+      "question_name": "R1",
+      "anwser": "Service",
+      "anwserselete": "a",
+      "additionalText": ""
+    },
+    "opportunity-type": {
+      "question": "How would you describe the opportunity you have?",
+      "question_name": "R2",
+      "anwser": "First mover",
+      "anwserselete": "a",
+      "additionalText": ""
+    }
+  },
+  "Base camp for success (go to market GTM)": {
+    "target-niche": {
+      "question_name": "GTM1",
+      "category": "go to market",
+      "question": "We know exactly which niche sector(s), and in which geographies, to target",
+      "anwser": "Strongly Agree",
+      "score": 2
+    },
+    "pinpoint-clients": {
+      "question_name": "GTM2",
+      "category": "go to market",
+      "question": "We could pinpoint specific clients right now who need our offering",
+      "anwser": "Agree",
+      "score": 1
+    }
+  },
+  "Tracking the climb (Performance Metrics PM)": {
+    "commercial-performance": {
+      "question_name": "PM1",
+      "category": "performance metrics",
+      "question": "We have a good grasp of our current commercial performance including revenue, gross profit, average deal value",
+      "anwser": "Strongly Disagree",
+      "score": -2
+    },
+    "revenue-profit-targets": {
+      "question_name": "PM2",
+      "category": "performance metrics",
+      "question": "Everyone, that needs to know, has clarity on what our revenue & profit targets are for this current financial year",
+      "anwser": "Agree",
+      "score": 1
+    }
+  },
+  "Scaling essentials (Commercial Essentials CE)": {
+    "objections-techniques": {
+      "question_name": "CE1",
+      "category": "commercial essentials",
+      "question": "We know all of the objections prospects or clients may come up with, and have clear techniques to overcome them",
+      "anwser": "Agree",
+      "score": 1
+    }
+  },
+  "Streamlining the climb (Optimal Processes OP)": {
+    "outbound-sales-approach": {
+      "question_name": "OP1",
+      "category": "optimal processes",
+      "question": "We have a proven approach to bringing new leads into this business via an outbound sales approach",
+      "anwser": "N/A",
+      "score": 0
+    }
+  },
+  "Assembling the team (People, Structure & Culture PSC)": {
+    "team-structure": {
+      "question_name": "PSC1",
+      "category": "people structure culture",
+      "question": "We have the right team structure in place to support our growth ambitions",
+      "anwser": "Strongly Agree",
+      "score": 2
+    }
+  },
+  "Toolbox for success (Systems & Tools ST)": {
+    "central-shared-drive": {
+      "question_name": "ST1",
+      "category": "systems tools",
+      "question": "Anyone involved in sales has access to a central shared drive, where they can easily access any information they might need",
+      "anwser": "Strongly Agree",
+      "score": 2
+    }
+  }
+}
+```
+
 ## 注意事项
 
 1. **端口配置**：确保后端运行在 `127.0.0.1:8000`
@@ -223,6 +332,7 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 3. **数据验证**：验证必要字段存在
 4. **错误处理**：返回适当的HTTP状态码
 5. **日志记录**：记录API调用和错误信息
+6. **字段名称**：注意使用 `question_name` 而不是 `question_id`
 
 ## 联系信息
 如有问题，请查看前端控制台日志或使用测试页面进行调试。 
