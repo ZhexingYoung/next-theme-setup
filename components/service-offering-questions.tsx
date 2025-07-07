@@ -183,12 +183,12 @@ export function ServiceOfferingQuestions({ answers, onAnswer }: ServiceOfferingQ
       selectedOption: option,
     })
     // 自动跳转到下一题
-    const currentIndex = serviceOfferingQuestions.findIndex((q) => q.id === questionId)
-    if (currentIndex < serviceOfferingQuestions.length - 1) {
-      const nextQuestionId = serviceOfferingQuestions[currentIndex + 1].id
-      setTimeout(() => {
-        setExpandedQuestions(new Set([nextQuestionId]))
-      }, 300)
+      const currentIndex = serviceOfferingQuestions.findIndex((q) => q.id === questionId)
+      if (currentIndex < serviceOfferingQuestions.length - 1) {
+        const nextQuestionId = serviceOfferingQuestions[currentIndex + 1].id
+        setTimeout(() => {
+          setExpandedQuestions(new Set([nextQuestionId]))
+        }, 300)
     }
   }
 

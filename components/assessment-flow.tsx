@@ -161,15 +161,176 @@ export function AssessmentFlow() {
     return false
   }
 
-  const handleSaveForLater = () => {
-    // 保存当前进度到localStorage
-    const progressData = {
-      currentStep: state.currentStep,
-      answers: state.answers,
-      savedAt: new Date().toISOString(),
+  // 新增：生成新的JSON格式
+  const generateNewJsonFormat = (answers: Record<string, any>) => {
+    const result: any = {
+      serviceOffering: {},
+      "Base camp for success (go to market GTM)": {},
+      "Tracking the climb (Performance Metrics PM)": {},
+      "Scaling essentials (Commercial Essentials CE)": {},
+      "Streamlining the climb (Optimal Processes OP)": {},
+      "Assembling the team (People, Structure & Culture PSC)": {},
+      "Toolbox for success (Systems & Tools ST)": {}
     }
-    localStorage.setItem("assessment_progress", JSON.stringify(progressData))
-    alert("Progress saved successfully!")
+
+    // Service Offering 部分
+    const serviceOfferingQuestions = [
+      { id: "industry", question: "What is your industry?" },
+      { id: "business-challenge", question: "What is the most challenging part in your business?" },
+      { id: "service-type", question: "How would you describe what you offer?", options: ["Service", "Platform", "Product"] },
+      { id: "opportunity-type", question: "How would you describe the opportunity you have?", options: ["First mover", "Disruptor", "Competitive"] },
+      { id: "concerns", question: "What keeps you awake at night?", options: ["Cashflow", "Readiness of your offering", "Customer Acquisition"] },
+      { id: "growth-route", question: "What do you believe is your best route to growth?", options: ["Marketing", "Direct Sales", "Sales via a partner"] },
+      { id: "business-age", question: "How long has your business been trading?", options: ["Less than 3 years", "3-5 years", "5 years plus"] },
+      { id: "business-size-employees", question: "How big is your business? (Employees)", options: ["5 people or less", "5-15 people", "15 people or more"] },
+      { id: "business-size-revenue", question: "How big is your business? (Annual Revenue)", options: ["Less than £1m", "£1m - £2.5m", "£2.5m"] },
+      { id: "paying-clients", question: "How many paying clients do you have?", options: ["3 or less", "4 to 8", "9 plus"] },
+      { id: "biggest-client-revenue", question: "How much of your revenue does your biggest client account for?", options: [">50%", "25-50%", "<25%"] },
+      { id: "revenue-type", question: "What sort of revenue do you mainly have currently?", options: ["One-off fees", "Monthly recurring revenue", "Multi-year recurring revenue"] },
+      { id: "funding-status", question: "How are you currently funded?", options: ["Bootstrapped", "Seed Funded", "Series A & beyond"] },
+      { id: "revenue-targets", question: "What are your revenue targets in the next year?", options: ["50%+ growth", "100%+ growth", "200%+ growth"] },
+      { id: "growth-ambitions", question: "What are your growth ambitions in the next three years?", options: ["Not even contemplated", "Regular, Steady growth", "Explosive growth"] },
+      { id: "clients-needed", question: "How many more clients do you need to achieve those growth ambitions?", options: ["1 to 2", "3 to 6", "7+"] },
+      { id: "preferred-revenue", question: "What sort of revenue would you be happy with as the majority of your earnings?", options: ["One-off fees", "Monthly recurring revenue", "Multi-year recurring revenue"] },
+      { id: "funding-plans", question: "What are your future funding plans?", options: ["Self-funded from here", "VC / Angel Investment", "Sale of company"] }
+    ]
+
+    // 处理 Service Offering 部分
+    let rCounter = 1 // 从R1开始
+    serviceOfferingQuestions.forEach((q, index) => {
+      const answer = answers[q.id]
+      if (!answer) return
+
+      if (q.id === "industry" || q.id === "business-challenge") {
+        // 文本题
+        result.serviceOffering[q.id] = {
+          text: answer.text || answer.additionalText || ""
+        }
+      } else {
+        // 选择题 - 从R1开始编号
+        const selectedOption = answer.selectedOption || ""
+        // 使用更严格的字符串匹配
+        const optionIndex = q.options?.findIndex(option => option.trim() === selectedOption.trim()) || -1
+        const answerLetter = optionIndex >= 0 ? String.fromCharCode(97 + optionIndex) : "" // a, b, c...
+
+        result.serviceOffering[q.id] = {
+          question: q.question,
+          question_id: `R${rCounter}`,
+          anwser: selectedOption,
+          anwserselete: answerLetter,
+          additionalText: answer.additionalText || ""
+        }
+        rCounter++ // 递增R编号
+      }
+    })
+
+    // 处理其他问卷部分
+    const sectionMappings = [
+      {
+        name: "Base camp for success (go to market GTM)",
+        questionPrefix: "question_00",
+        category: "go to market",
+        questions: [
+          { id: "target-niche", question: "We know exactly which niche sector(s), and in which geographies, to target" },
+          { id: "pinpoint-clients", question: "We could pinpoint specific clients right now who need our offering" },
+          { id: "targeted-pipeline", question: "We've purposely targeted the clients in our pipeline because they all share the same characteristics" },
+          { id: "know-buyers", question: "We know exactly who the typical buyers, influencers & decision-makers are for our offering" },
+          { id: "clear-problems", question: "We are clear on the specific problems we solve and can articulate that to everyone we speak to" },
+          { id: "proven-approach", question: "We have a proven approach to secure new clients who we've never even spoken to before" },
+          { id: "partners-resellers", question: "We use partners or resellers effectively to help achieve our revenue goals" },
+          { id: "account-management", question: "We're in control of our biggest accounts and have a structured approach to account management" },
+          { id: "global-growth", question: "We want to, and have a clear plan for how to, grow our service offering globally" },
+          { id: "know-competitors", question: "We know who all of our competitors are and can articulate how our offering differs to theirs" }
+        ]
+      },
+      {
+        name: "Tracking the climb (Performance Metrics PM)",
+        questionPrefix: "question_01",
+        category: "performance metrics",
+        questions: [
+          { id: "commercial-performance", question: "We have a good grasp of our current commercial performance including revenue, gross profit, average deal value" },
+          { id: "revenue-profit-targets", question: "Everyone, that needs to know, has clarity on what our revenue & profit targets are for this current financial year" },
+          { id: "pipeline-management", question: "Our pipeline is managed by stages in a sales funnel, and we can use it to forecast sales for the next 12 months" },
+          { id: "great-sale-recognition", question: "Everyone that is responsible for working with clients recognises what makes a great sale for this business" },
+          { id: "three-year-targets", question: "We have clarity on what our sales & profit targets need to be for the next 3 years to achieve our goals" },
+          { id: "kpis-metrics", question: "We have KPIs or metrics defined at each stage of our sales funnel leading to our ultimate targets" }
+        ]
+      },
+      {
+        name: "Scaling essentials (Commercial Essentials CE)",
+        questionPrefix: "question_02",
+        category: "commercial essentials",
+        questions: [
+          { id: "objections-techniques", question: "We know all of the objections prospects or clients may come up with, and have clear techniques to overcome them" },
+          { id: "commercial-model", question: "Our commercial model is easy to understand and makes it easy for clients to buy from us" },
+          { id: "pricing-testing", question: "We've tested our pricing to ensure it is competitive whilst at the same time allows us to achieve our targets" },
+          { id: "terms-conditions", question: "We have terms & conditions and an SoW which can be agreed quickly and promote a win-win relationship" }
+        ]
+      },
+      {
+        name: "Streamlining the climb (Optimal Processes OP)",
+        questionPrefix: "question_03",
+        category: "optimal processes",
+        questions: [
+          { id: "outbound-sales-approach", question: "We have a proven approach to bringing new leads into this business via an outbound sales approach" },
+          { id: "marketing-brand-awareness", question: "Our marketing efforts are increasing brand awareness whilst also bringing in new regular inbound leads" },
+          { id: "lead-qualification", question: "We have a structured approach to qualifying every lead, which enables us to prioritise hot leads and say no to the wrong ones" },
+          { id: "delivery-handoff", question: "Once a sale is closed, the process for handing off to the team responsible for delivery is clearly defined & understood" }
+        ]
+      },
+      {
+        name: "Assembling the team (People, Structure & Culture PSC)",
+        questionPrefix: "question_04",
+        category: "people structure culture",
+        questions: [
+          { id: "team-structure", question: "We have the right team structure in place to support our growth ambitions" },
+          { id: "right-people-roles", question: "We have the right people in the right roles to achieve our growth ambitions" },
+          { id: "compensation-plans", question: "We have compensation plans in place that incentivise the right behaviours" },
+          { id: "sales-culture", question: "We have a sales culture that supports our growth ambitions" },
+          { id: "performance-management", question: "We have a performance management system in place that supports our growth ambitions" }
+        ]
+      },
+      {
+        name: "Toolbox for success (Systems & Tools ST)",
+        questionPrefix: "question_05",
+        category: "systems tools",
+        questions: [
+          { id: "central-shared-drive", question: "Anyone involved in sales has access to a central shared drive, where they can easily access any information they might need" },
+          { id: "client-collateral", question: "Our collateral to share with clients paints us in the best possible light and sets us apart from the competition" },
+          { id: "capability-demonstration", question: "We have a repeatable way to demonstrate our full capability, in a way which is engaging and effective" },
+          { id: "digital-tools", question: "Our team have access to the digital & online tools they need to run effective outbound activity" },
+          { id: "crm-implementation", question: "We have a CRM implemented which allows us to run an efficient sales organisation, including pipeline management" }
+        ]
+      }
+    ]
+
+    // 处理每个部分的问题
+    sectionMappings.forEach((section, sectionIndex) => {
+      section.questions.forEach((q, questionIndex) => {
+        const answer = answers[q.id]
+        if (!answer || !answer.selectedOption) return
+
+        const scoreMapping: Record<string, number> = {
+          "Strongly Disagree": -2,
+          "Disagree": -1,
+          "N/A": 0,
+          "Agree": 1,
+          "Strongly Agree": 2
+        }
+
+        const score = scoreMapping[answer.selectedOption] || 0
+
+        result[section.name][q.id] = {
+          question_id: section.questionPrefix, // 统一使用section的questionPrefix，不细分
+          category: section.category,
+          question: q.question,
+          anwser: answer.selectedOption,
+          score: score
+        }
+      })
+    })
+
+    return result
   }
 
   const handleCompleteSection = async () => {
@@ -202,22 +363,10 @@ export function AssessmentFlow() {
         } catch (error) {
           console.error("Failed to save scores:", error)
         }
-        // 只导出 Service Offering 部分
-        const serviceOfferingIds = [
-          "industry", "business-challenge", "service-type", "opportunity-type", "concerns", "growth-route", "business-age", "business-size-employees", "business-size-revenue", "paying-clients", "biggest-client-revenue", "revenue-type", "funding-status", "revenue-targets", "growth-ambitions", "clients-needed", "preferred-revenue", "funding-plans"
-        ];
-        const serviceOffering: Record<string, any> = {};
-        serviceOfferingIds.forEach(id => {
-          if (state.answers[id]) serviceOffering[id] = state.answers[id];
-        });
-        // 获取六大类建议文本
-        const pillarReports = getAllPillarReports(pillarScores, userId);
-        // 组装数据
-        const data = {
-          userId,
-          serviceOffering,
-          pillarReports
-        }
+        
+        // 生成新的JSON格式
+        const newJsonData = generateNewJsonFormat(state.answers)
+        
         // 新增：自动生成并下载 JSON 文件
         function downloadJsonFile(data: any, filename: string) {
           const jsonStr = JSON.stringify(data, null, 2)
@@ -229,17 +378,40 @@ export function AssessmentFlow() {
           a.click()
           URL.revokeObjectURL(url)
         }
-        downloadJsonFile(data, `${userId.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}.json`)
+        downloadJsonFile(newJsonData, `${userId.replace(/[^a-zA-Z0-9_\-\.]/g, '_')}.json`)
         // 自动POST到FastAPI
         try {
-          await fetch("http://127.0.0.1:8000/api/save-user-report", {
+          console.log("🚀 开始发送数据到后端...")
+          console.log("📤 发送的数据:", newJsonData)
+          
+          const response = await fetch("http://127.0.0.1:8000/api/save-user-report", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify(newJsonData)
           })
+          
+          console.log("📥 后端响应状态:", response.status)
+          console.log("📥 后端响应头:", Object.fromEntries(response.headers.entries()))
+          
+          if (response.ok) {
+            const responseData = await response.json()
+            console.log("✅ 数据成功发送到后端")
+            console.log("📥 后端返回数据:", responseData)
+          } else {
+            const errorText = await response.text()
+            console.warn("⚠️ 后端响应异常:", response.status)
+            console.warn("⚠️ 错误详情:", errorText)
+          }
         } catch (e) {
-          console.error("自动POST到FastAPI失败", e)
+          console.error("❌ 自动POST到FastAPI失败", e)
+          console.error("❌ 错误类型:", e instanceof Error ? e.constructor.name : typeof e)
+          console.error("❌ 错误消息:", e instanceof Error ? e.message : String(e))
+          // 不影响用户体验，继续执行
         }
+        
+        // 新增：设置评估完成标记，触发dashboard获取LLM建议
+        localStorage.setItem("assessmentCompleted", "true")
+        
         router.push("/dashboard")
       } else {
         // 否则进入下一步
@@ -292,14 +464,6 @@ export function AssessmentFlow() {
 
           {/* 底部按钮 */}
           <div className="flex justify-between mt-12">
-            <Button
-              onClick={handleSaveForLater}
-              variant="outline"
-              className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700"
-            >
-              Save for later
-            </Button>
-
             <Button
               onClick={handleCompleteSection}
               disabled={!isCurrentStepCompleted()}

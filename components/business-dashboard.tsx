@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts"
 import { Download, Target, Users, TrendingUp, DollarSign, User } from "lucide-react"
-import { AccountDropdown } from "./account-dropdown"
 import { useEffect, useState } from "react"
 import { getUserScoreHistory } from "@/lib/score-calculator"
 import pillarAdvice from "@/lib/pillar-advice.json"
@@ -116,6 +115,12 @@ async function postUserReportJson(userId: string, serviceOffering: Record<string
   }
 }
 
+// 新增：LLM建议相关的状态和函数
+interface LLMAdvice {
+  advice: string
+  timestamp: string
+}
+
 export function BusinessDashboard() {
   const router = useRouter();
   const [userName, setUserName] = useState<string>("")
@@ -129,6 +134,65 @@ export function BusinessDashboard() {
   const [businessChallenge, setBusinessChallenge] = useState("")
   const [serviceOffering, setServiceOffering] = useState<Record<string, any>>({})
   
+  // 新增：LLM建议相关状态
+  const [llmAdvice, setLlmAdvice] = useState<LLMAdvice | null>(null)
+  const [isLoadingAdvice, setIsLoadingAdvice] = useState(false)
+  const [adviceError, setAdviceError] = useState<string>("")
+
+  // 新增：获取LLM建议的函数
+  const fetchLLMAdvice = async (assessmentData: any) => {
+    setIsLoadingAdvice(true)
+    setAdviceError("")
+    
+    try {
+      const response = await fetch("/api/llm-advice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          assessmentData: assessmentData
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch advice")
+      }
+
+      const data = await response.json()
+      setLlmAdvice(data)
+      
+      // 保存到localStorage
+      localStorage.setItem("llmAdvice", JSON.stringify(data))
+    } catch (error) {
+      console.error("Error fetching LLM advice:", error)
+      setAdviceError("Failed to load business advice. Please try again later.")
+    } finally {
+      setIsLoadingAdvice(false)
+    }
+  }
+
+  // 新增：检查是否需要获取建议
+  const checkAndFetchAdvice = async () => {
+    // 检查是否刚完成评估
+    const hasCompletedAssessment = localStorage.getItem("assessmentCompleted")
+    const hasAdvice = localStorage.getItem("llmAdvice")
+    
+    if (hasCompletedAssessment && !hasAdvice) {
+      // 获取最新的评估数据
+      const assessmentData = localStorage.getItem("assessment_answers")
+      if (assessmentData) {
+        await fetchLLMAdvice(JSON.parse(assessmentData))
+        // 清除完成标记
+        localStorage.removeItem("assessmentCompleted")
+      }
+    } else if (hasAdvice) {
+      // 加载已保存的建议
+      setLlmAdvice(JSON.parse(hasAdvice))
+    }
+  }
+
   useEffect(() => {
     // 未登录自动跳转
     const userStr = typeof window !== "undefined" ? localStorage.getItem("currentUser") : null;
@@ -190,6 +254,9 @@ export function BusinessDashboard() {
         setServiceOffering(answers)
       }
     }
+
+    // 新增：检查并获取LLM建议
+    checkAndFetchAdvice()
   }, [router])
 
   // 自动 POST JSON 到后端
@@ -235,11 +302,7 @@ export function BusinessDashboard() {
           <div className="flex items-center space-x-2">
             <img src="/images/ascent-logo.png" alt="logo" className="h-10 w-auto" />
           </div>
-          <div className="flex space-x-6 ml-8">
-            <button className="text-white hover:text-slate-300">Dashboard</button>
-          </div>
         </div>
-        <AccountDropdown />
       </div>
 
       <div className="p-6">
@@ -252,6 +315,57 @@ export function BusinessDashboard() {
               <p className="text-slate-300 mb-4">
                 Here's the current standing of your business report based on your most recent assessment.
               </p>
+
+              {/* 新增：LLM建议文本框 */}
+              {(llmAdvice || isLoadingAdvice || adviceError) && (
+                <Card className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 mb-6 shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white">AI Business Insights</h3>
+                        <p className="text-purple-100 text-sm">Personalized recommendations for your business</p>
+                      </div>
+                    </div>
+
+                    {isLoadingAdvice && (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        <span className="ml-3 text-white">Generating personalized advice...</span>
+                      </div>
+                    )}
+
+                    {adviceError && (
+                      <div className="bg-red-500 bg-opacity-20 border border-red-400 rounded-lg p-4">
+                        <p className="text-red-100">{adviceError}</p>
+                        <button 
+                          onClick={() => checkAndFetchAdvice()}
+                          className="mt-2 px-4 py-2 bg-white bg-opacity-20 text-white rounded hover:bg-opacity-30 transition-colors"
+                        >
+                          Try Again
+                        </button>
+                      </div>
+                    )}
+
+                    {llmAdvice && !isLoadingAdvice && (
+                      <div className="bg-white bg-opacity-10 rounded-lg p-4">
+                        <div className="prose prose-invert max-w-none">
+                          <div className="whitespace-pre-line text-white leading-relaxed">
+                            {llmAdvice.advice}
+                          </div>
+                        </div>
+                        <div className="mt-4 text-xs text-purple-200">
+                          Generated on {new Date(llmAdvice.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Score Cards */}
               <div className="flex space-x-4 mb-6">
@@ -343,10 +457,10 @@ export function BusinessDashboard() {
                               />
                               <text x="60" y="65" textAnchor="middle" fontSize="28" fontWeight="bold" fill={color}>{label}</text>
                             </svg>
-                          </div>
+                        </div>
                           {/* 右侧标题和描述 */}
                           <div className="flex-1 flex flex-col justify-between h-full">
-                            <div>
+                        <div>
                               <h3 className="text-2xl font-bold mb-2 text-slate-900">{tab.label}</h3>
                               <p className="text-slate-700 mb-6 whitespace-pre-line">{desc}</p>
                             </div>
@@ -357,12 +471,12 @@ export function BusinessDashboard() {
                                   <span className="font-semibold text-slate-800">
                                     {score < -1.25 ? 'Start Doing' : score > 1.25 ? 'Keep Doing' : 'Do More'}
                                   </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
                         </div>
-                      </TabsContent>
+                      </div>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
                     )
                   })}
                 </Tabs>
