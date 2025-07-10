@@ -11,7 +11,7 @@ import { ScalingEssentialsQuestions } from "./scaling-essentials-questions"
 import { StreamliningClimbQuestions } from "./streamlining-climb-questions"
 import { AssemblingTeamQuestions } from "./assembling-team-questions"
 import { ToolboxSuccessQuestions } from "./toolbox-success-questions"
-import { calculateAllPillarScores, calculateCategoryScores, saveScoresToFile, getAllPillarReports } from "@/lib/score-calculator"
+import { calculateAllPillarScores, calculateCategoryScores, saveScoresToFile, getAllPillarReports, CATEGORY_MAPPING } from "@/lib/score-calculator"
 
 const assessmentSteps = [
   { id: "service-offering", title: "Service Offering", completed: false },
@@ -324,6 +324,7 @@ export function AssessmentFlow() {
         result[section.name][q.id] = {
           question_name: `${section.questionPrefix}${questionCounter}`, // 使用前缀+递增编号
           category: section.category,
+          catmapping: CATEGORY_MAPPING[q.id] || "", // 添加三大能力分类映射
           question: q.question,
           anwser: answer.selectedOption,
           score: score

@@ -34,6 +34,7 @@ Content-Type: application/json
     "target-niche": {
       "question_name": "GTM1",
       "category": "go to market",
+      "catmapping": "Profitable",
       "question": "We know exactly which niche sector(s), and in which geographies, to target",
       "anwser": "Strongly Agree",
       "score": 2
@@ -114,6 +115,10 @@ POST /api/llm-advice
   - N/A: 0
   - Agree: 1
   - Strongly Agree: 2
+- **能力分类映射**：
+  - Profitable: 盈利性能力
+  - Repeatable: 可重复性能力
+  - Scalable: 可扩展性能力
 
 ### 分类信息和题目编号
 - **Go To Market (GTM)**: GTM1, GTM2, GTM3... GTM10
@@ -164,6 +169,7 @@ POST /api/llm-advice
 - 处理：标准化所有问卷数据
 - **重要更新**：
   - 字段名从 `question_id` 改为 `question_name`
+  - 新增 `catmapping` 字段，显示三大能力分类
   - Service Offering: R1-R16
   - GTM: GTM1-GTM10
   - PM: PM1-PM6

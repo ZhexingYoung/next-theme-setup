@@ -56,6 +56,50 @@
 
     <script>
         function generateTestJson() {
+            // 能力分类映射
+            const CATEGORY_MAPPING = {
+                // base-camp
+                "target-niche": "Profitable",
+                "pinpoint-clients": "Profitable",
+                "targeted-pipeline": "Repeatable",
+                "know-buyers": "Profitable",
+                "clear-problems": "Profitable",
+                "proven-approach": "Profitable",
+                "partners-resellers": "Scalable",
+                "account-management": "Scalable",
+                "global-growth": "Scalable",
+                "know-competitors": "Profitable",
+                // tracking-climb
+                "commercial-performance": "Profitable",
+                "revenue-profit-targets": "Profitable",
+                "pipeline-management": "Profitable",
+                "great-sale-recognition": "Profitable",
+                "three-year-targets": "Repeatable",
+                "kpis-metrics": "Repeatable",
+                // scaling-essentials
+                "objections-techniques": "Profitable",
+                "commercial-model": "Scalable",
+                "pricing-testing": "Repeatable",
+                "terms-conditions": "Scalable",
+                // streamlining-climb
+                "outbound-sales-approach": "Repeatable",
+                "marketing-brand-awareness": "Repeatable",
+                "lead-qualification": "Repeatable",
+                "delivery-handoff": "Scalable",
+                // assembling-team
+                "team-structure": "Repeatable",
+                "right-people-roles": "Repeatable",
+                "compensation-plans": "Profitable",
+                "sales-culture": "Scalable",
+                "performance-management": "Scalable",
+                // toolbox-success
+                "central-shared-drive": "Scalable",
+                "client-collateral": "Profitable",
+                "capability-demonstration": "Repeatable",
+                "digital-tools": "Scalable",
+                "crm-implementation": "Scalable",
+            };
+
             // 模拟问卷回答数据
             const mockAnswers = {
                 // Service Offering 部分
@@ -272,6 +316,7 @@
                     result[section.name][q.id] = {
                         question_name: `${section.questionPrefix}${questionCounter}`,
                         category: section.category,
+                        catmapping: CATEGORY_MAPPING[q.id] || "",
                         question: q.question,
                         anwser: answer.selectedOption,
                         score: score
